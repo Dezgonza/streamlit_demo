@@ -1,6 +1,6 @@
 import sys
 
-sys.path.append('C:\\Users\\Gonzalo\\Documents\\Git\\sii\\utils')
+sys.path.append('.\\utils')
 
 import sii_sign
 import streamlit as st    
