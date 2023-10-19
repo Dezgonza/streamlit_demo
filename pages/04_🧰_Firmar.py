@@ -8,7 +8,7 @@ import streamlit as st
 
 def sign():
     numero = option.split(' ')[-1]
-    cotizacion = conn.query(f"select * from cotizacion where numero='{numero}'", ttl=0)
+    cotizacion = conn.query(f"select * from cotizacion where id='{numero}'", ttl=0)
     id, id_receptor = cotizacion['id'].loc[0], cotizacion['id_receptor'].loc[0]
     repuestos = conn.query(f"select * from repuesto where id_cotizacion='{id}'", ttl=0)
     articulos = [list(repuestos.loc[i]) for i in range(len(repuestos))]
