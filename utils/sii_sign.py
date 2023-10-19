@@ -48,7 +48,7 @@ def fill_table(driver, RUT, articulos):
         sleep(sleep_time)
 
         sbox = driver.find_element(by=By.NAME, value=f'EFXP_QTY_0{i+1}')
-        sbox.send_keys(str(articulo[0]))
+        sbox.send_keys(str(articulo[1]))
         sleep(sleep_time)
 
         sbox = driver.find_element(by=By.NAME, value=f'EFXP_PRC_0{i+1}')

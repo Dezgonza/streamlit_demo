@@ -61,11 +61,11 @@ def save():
     
 
 st.set_page_config(
-    page_title='Cotizacion',
+    page_title='Crear Cotizacion',
     page_icon='🧰'
 )
 
-st.title("🧰 Cotizacion")
+st.title("🧰 Crear Cotizacion")
 
 conn = st.experimental_connection('imgec_db', type='sql')
 
