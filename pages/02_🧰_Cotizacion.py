@@ -24,7 +24,7 @@ def save():
     buyer_id = conn.query(f"""select id
                               from receptor
                               where razon_social='{option}'""", ttl=0)['id']
-    print(int(buyer_id))
+    # print(int(buyer_id))
                           
     with conn.session as s:
         #s.execute('DELETE FROM receptor;')
@@ -39,7 +39,7 @@ def save():
 
         last_id = conn.query("""SELECT * FROM cotizacion
                              WHERE id=(SELECT max(id) FROM cotizacion)""", ttl=0)['id']
-        print('id', int(last_id))
+        # print('id', int(last_id))
 
         for _, row in st.session_state.repuestos.iterrows():
             s.execute(

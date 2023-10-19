@@ -3,7 +3,6 @@ import sys
 sys.path.append('C:\\Users\\Gonzalo\\Documents\\Git\\sii\\utils')
 
 import sii_sign
-import pandas as pd
 import streamlit as st    
 
 
@@ -15,8 +14,8 @@ def sign():
     articulos = [list(repuestos.loc[i]) for i in range(len(repuestos))]
     receptor = conn.query(f"select * from receptor where id='{id_receptor}'", ttl=0)
     rut, mail = receptor['rut'].loc[0], receptor['mail'].loc[0]
-    print(rut, mail)
-    print(articulos)
+    # print(rut, mail)
+    # print(articulos)
     sii_sign.main(rut, articulos)
 
 
