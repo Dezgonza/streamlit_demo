@@ -29,7 +29,7 @@ st.title("🧰 Firma Electronica")
 conn = st.experimental_connection('imgec_db', type='sql')
 
 cotizaciones = conn.query('select * from cotizacion', ttl=0)
-cotizaciones['numero_cot'] = 'Cotizacion Nº ' + cotizaciones['numero'].astype(str)
+cotizaciones['numero_cot'] = 'Cotizacion Nº ' + cotizaciones['id'].astype(str)
 
 option = st.selectbox(
         "Selecciona una cotizacion para firmar.",

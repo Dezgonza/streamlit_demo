@@ -21,32 +21,26 @@ def new_repuestos():
 
 def save():
 
-    buyer_id = conn.query(f"""select id
-                              from receptor
-                              where razon_social='{option}'""", ttl=0)['id']
-    # print(int(buyer_id))
+    buyer_id = conn.query(f"""select id from receptor
+                          where razon_social='{option}'""", ttl=0)['id'].iloc[0]
                           
     with conn.session as s:
         #s.execute('DELETE FROM receptor;')
 
         s.execute(
-            """INSERT INTO cotizacion (numero, id_receptor, vehiculo, vin)
-            VALUES (:numero, :id_receptor, :vehiculo, :vin);""",
-            params=dict(numero=st.session_state.num, id_receptor=int(buyer_id),
-                        vehiculo=st.session_state.vehicule, vin=st.session_state.vin)
+            """INSERT INTO cotizacion (id_receptor, vehiculo, vin)
+            VALUES (:id_receptor, :vehiculo, :vin);""",
+            params=dict(id_receptor=buyer_id, vehiculo=st.session_state.vehicule,
+                        vin=st.session_state.vin)
         )
-        s.commit()
-
-        last_id = conn.query("""SELECT * FROM cotizacion
-                             WHERE id=(SELECT max(id) FROM cotizacion)""", ttl=0)['id']
-        # print('id', int(last_id))
 
         for _, row in st.session_state.repuestos.iterrows():
             s.execute(
             """INSERT INTO repuesto (id_cotizacion, cantidad, descripcion, precio, numero_parte)
             VALUES (:id_cotizacion, :cantidad, :descripcion, :precio, :numero_parte);""",
-            params=dict(id_cotizacion=int(last_id), cantidad=row['Cantidad'], descripcion=row['Descripcion'],
-                        precio=row['Valor Unitario'], numero_parte=row['Nº de Parte'])
+            params=dict(id_cotizacion=st.session_state.next_id, cantidad=row['Cantidad'],
+                        descripcion=row['Descripcion'], precio=row['Valor Unitario'],
+                        numero_parte=row['Nº de Parte'])
             )
         s.commit()
 
@@ -65,9 +59,13 @@ st.set_page_config(
     page_icon='🧰'
 )
 
-st.title("🧰 Crear Cotizacion")
-
 conn = st.experimental_connection('imgec_db', type='sql')
+
+LAST_ID = conn.query("""select * from cotizacion
+                     where id=(select max(id) from cotizacion)""", ttl=0)['id'].iloc[0]
+st.session_state.next_id = LAST_ID + 1
+
+st.title(f"🧰 Cotizacion Nº {st.session_state.next_id}")
 
 buyers = conn.query('select * from receptor', ttl=0)
 # st.dataframe(buyers)
@@ -91,7 +89,6 @@ with st.form("info", clear_on_submit=False):
         index=None,
         placeholder="Comprador...",
     )
-    num = st.text_input('Nº de Cotizacion', key="num")
     vehicule = st.text_input('Vehiculo', key="vehicule")
     vin = st.text_input('VIN', key="vin")
     st.form_submit_button("Actualizar info")

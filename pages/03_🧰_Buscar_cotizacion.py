@@ -12,7 +12,7 @@ def filter_buyer(opt):
 
     buyer_id = buyers[buyers.razon_social == option_buyer]['id'].iloc[0]
     cotizaciones = conn.query(f"select * from cotizacion where id_receptor='{buyer_id}'", ttl=0)
-    cotizaciones['numero_cot'] = 'Cotizacion Nº ' + cotizaciones['numero'].astype(str)
+    cotizaciones['numero_cot'] = 'Cotizacion Nº ' + cotizaciones['id'].astype(str)
     
     return cotizaciones
 
