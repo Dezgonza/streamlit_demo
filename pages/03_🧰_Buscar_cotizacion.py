@@ -1,7 +1,9 @@
+import os
 import sys
 
 sys.path.append('.\\utils')
 
+import subprocess
 import render_pdf
 import streamlit as st
     
@@ -20,6 +22,13 @@ def visualize(option_cotizacion):
     path = f'COTIZACION {numero}.pdf'
     pdf_display = render_pdf.show_pdf(path)
     st.markdown(pdf_display, unsafe_allow_html=True)
+
+def show_folder(option_cotizacion):
+    numero = option_cotizacion.split(' ')[-1]
+    query_string = f'COTIZACION {numero}.pdf'
+    local_path = r"C:\Users\Gonzalo\Documents\Git\sii" # r is raw for dealing with backslashes
+    subprocess.Popen(f'explorer /select, {local_path}\{query_string}')
+
 
 st.set_page_config(
     page_title='Buscar Cotizacion',
@@ -60,3 +69,5 @@ if option_buyer is not None:
 
     if option_cotizacion is not None:
         visualize(option_cotizacion)
+
+        st.button("Mostrar en directorio", on_click=show_folder, args=[option_cotizacion])
