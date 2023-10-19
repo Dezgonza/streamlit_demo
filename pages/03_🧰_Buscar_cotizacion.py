@@ -57,8 +57,15 @@ option_buyer = st.selectbox(
 
 # st.button("Filtrar", on_click=filter_buyer)
 
+print(option_buyer)
+
 if option_buyer is not None:
+
+    print(option_buyer)
+
     cotizaciones = filter_buyer(option_buyer)
+
+    print(cotizaciones)
 
     option_cotizacion = st.selectbox(
         "Selecciona una cotizacion para mostrar.",

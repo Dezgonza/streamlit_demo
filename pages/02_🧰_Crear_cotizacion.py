@@ -21,7 +21,7 @@ def new_repuestos():
 
 def save():
 
-    buyer_id = conn.query(f"""select id from receptor
+    buyer_id = conn.query(f"""select * from receptor
                           where razon_social='{option}'""", ttl=0)['id'].iloc[0]
                           
     with conn.session as s:
@@ -30,7 +30,7 @@ def save():
         s.execute(
             """INSERT INTO cotizacion (id_receptor, vehiculo, vin)
             VALUES (:id_receptor, :vehiculo, :vin);""",
-            params=dict(id_receptor=buyer_id, vehiculo=st.session_state.vehicule,
+            params=dict(id_receptor=int(buyer_id), vehiculo=st.session_state.vehicule,
                         vin=st.session_state.vin)
         )
 
@@ -42,15 +42,17 @@ def save():
                         descripcion=row['Descripcion'], precio=row['Valor Unitario'],
                         numero_parte=row['Nº de Parte'])
             )
+
+        context = render_pdf.get_context(st.session_state.repuestos)
+        NUM = st.session_state.next_id
+        my_context = {'num': NUM, 'vehicule': st.session_state.vehicule,
+                      'vin': st.session_state.vin, 'name': option}
+        context.update(my_context)
+
+        render_pdf.render(context, f"COTIZACION {NUM}.pdf")
+
         s.commit()
 
-    context = render_pdf.get_context(st.session_state.repuestos)
-    NUM = st.session_state.num
-    my_context = {'num': NUM, 'vehicule': st.session_state.vehicule,
-                  'vin': st.session_state.vin}
-    context.update(my_context)
-
-    render_pdf.render(context, f"COTIZACION {NUM}.pdf")
     new_df()
     
 
@@ -63,7 +65,7 @@ conn = st.experimental_connection('imgec_db', type='sql')
 
 LAST_ID = conn.query("""select * from cotizacion
                      where id=(select max(id) from cotizacion)""", ttl=0)['id'].iloc[0]
-st.session_state.next_id = LAST_ID + 1
+st.session_state.next_id = int(LAST_ID) + 1
 
 st.title(f"🧰 Cotizacion Nº {st.session_state.next_id}")
 

@@ -24,7 +24,7 @@ def get_context(df):
     sub_total = np.ceil(total / 1.19).astype(np.uint64)
     iva = total - sub_total # np.ceil(total * (0.19 / 1.19)).astype(np.uint64)
 
-    context = {'date': date,  'iva': iva, 'total': total, 'sub_total': sub_total}
+    context = {'date': date, 'iva': iva, 'total': total, 'sub_total': sub_total}
 
     for i in range(11):
 
