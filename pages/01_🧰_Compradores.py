@@ -11,6 +11,18 @@ def new_buyer():
         )
         s.commit()
 
+def edit_buyer():
+    
+    with conn.session as s:
+        #s.execute('DELETE FROM receptor;')
+        s.execute(
+        """UPDATE receptor SET razon_social='{}', rut='{}', mail='{}'
+        WHERE razon_social='{}';""".format(st.session_state.new_name,
+                                          st.session_state.new_rut,
+                                          st.session_state.new_mail,
+                                          option))
+        s.commit()
+
 st.set_page_config(
     page_title='Compradores',
     page_icon='🧰'
@@ -25,7 +37,43 @@ with st.form("new_buyer", clear_on_submit=True):
     name = st.text_input('Razon Social', key="name")
     rut = st.text_input('RUT', key="rut")
     mail = st.text_input('E-mail', key="mail")
-    st.form_submit_button("Agregar", on_click=new_buyer)
+    submit_button = st.form_submit_button("Agregar")
+
+if submit_button:
+    if name == '':
+        st.error("Debe ingresar el nombre del contacto")
+    else:
+        new_buyer()
+        st.success(f"Se ha creado el contacto para {name}")
+
+buyers = conn.query('select * from receptor', ttl=0)
+
+st.write("# Edita un comprador")
+
+option = st.selectbox(
+        "Selecciona un comprador.",
+        tuple(buyers['razon_social']),
+        index=None,
+        placeholder="Comprador...",
+    )
+
+if option is not None:
+
+    buyer = buyers[buyers.razon_social == option]
+
+    with st.form("edit_buyer", clear_on_submit=True):
+        new_name = st.text_input('Razon Social', key="new_name", value=option)
+        new_rut = st.text_input('RUT', key="new_rut", value=buyer.rut.iloc[0])
+        new_mail = st.text_input('E-mail', key="new_mail", value=buyer.mail.iloc[0])
+        edit_button = st.form_submit_button("Actualizar")
+
+    if edit_button:
+        if new_name == '':
+            st.error("Debe ingresar el nombre del contacto")
+        else:
+            edit_buyer()
+            st.success(f"Se ha editado el contacto de {option}")
+            st.rerun()
 
 buyers = conn.query('select * from receptor', ttl=0)
 st.dataframe(buyers)

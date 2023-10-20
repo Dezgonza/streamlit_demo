@@ -78,3 +78,20 @@ if option_buyer is not None:
         visualize(option_cotizacion)
 
         st.button("Mostrar en directorio", on_click=show_folder, args=[option_cotizacion])
+
+if option_buyer is None:
+
+    cotizaciones = conn.query(f"select * from cotizacion", ttl=0)
+    cotizaciones['numero_cot'] = 'Cotizacion Nº ' + cotizaciones['id'].astype(str)
+
+    option_cotizacion = st.selectbox(
+        "Selecciona una cotizacion para mostrar.",
+        tuple(cotizaciones['numero_cot']),
+        index=None,
+        placeholder="Cotizacion...",
+    )
+
+    if option_cotizacion is not None:
+        visualize(option_cotizacion)
+
+        st.button("Mostrar en directorio", on_click=show_folder, args=[option_cotizacion])
