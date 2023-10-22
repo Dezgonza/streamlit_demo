@@ -10,9 +10,9 @@ import streamlit as st
 
 def filter_buyer(opt):
 
-    buyer_id = buyers[buyers.razon_social == option_buyer]['id'].iloc[0]
-    cotizaciones = conn.query(f"select * from cotizacion where id_receptor='{buyer_id}'", ttl=0)
-    cotizaciones['numero_cot'] = 'Cotizacion Nº ' + cotizaciones['id'].astype(str)
+    buyer_id = buyers[buyers.company_name == option_buyer]['buyer_id'].iloc[0]
+    cotizaciones = conn.query(f"SELECT * FROM quotes WHERE buyer_id='{buyer_id}'", ttl=0)
+    cotizaciones['numero_cot'] = 'Cotizacion Nº ' + cotizaciones['quote_id'].astype(str)
     
     return cotizaciones
 
@@ -39,7 +39,7 @@ st.title("🧰 Buscar Cotizacion")
 
 conn = st.experimental_connection('imgec_db', type='sql')
 
-buyers = conn.query('select * from receptor', ttl=0)
+buyers = conn.query('SELECT * FROM buyers', ttl=0)
 # st.dataframe(buyers)
 
 # refs = conn.query('select * from repuesto', ttl=0)
@@ -50,22 +50,16 @@ buyers = conn.query('select * from receptor', ttl=0)
 
 option_buyer = st.selectbox(
     "Selecciona un comprador.",
-    tuple(buyers['razon_social']),
+    tuple(buyers['company_name']),
     index=None,
     placeholder="Comprador...",
 )
 
 # st.button("Filtrar", on_click=filter_buyer)
 
-print(option_buyer)
-
 if option_buyer is not None:
 
-    print(option_buyer)
-
     cotizaciones = filter_buyer(option_buyer)
-
-    print(cotizaciones)
 
     option_cotizacion = st.selectbox(
         "Selecciona una cotizacion para mostrar.",
@@ -81,8 +75,8 @@ if option_buyer is not None:
 
 if option_buyer is None:
 
-    cotizaciones = conn.query(f"select * from cotizacion", ttl=0)
-    cotizaciones['numero_cot'] = 'Cotizacion Nº ' + cotizaciones['id'].astype(str)
+    cotizaciones = conn.query(f"SELECT * FROM quotes", ttl=0)
+    cotizaciones['numero_cot'] = 'Cotizacion Nº ' + cotizaciones['quote_id'].astype(str)
 
     option_cotizacion = st.selectbox(
         "Selecciona una cotizacion para mostrar.",

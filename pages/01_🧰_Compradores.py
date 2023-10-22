@@ -5,8 +5,8 @@ def new_buyer():
     with conn.session as s:
         #s.execute('DELETE FROM receptor;')
         s.execute(
-        'INSERT INTO receptor (razon_social, rut, mail) VALUES (:razon_social, :rut, :mail);',
-        params=dict(razon_social=st.session_state.name, rut=st.session_state.rut,
+        'INSERT INTO buyers (company_name, rut, mail) VALUES (:company_name, :rut, :mail);',
+        params=dict(company_name=st.session_state.name, rut=st.session_state.rut,
                     mail=st.session_state.mail)
         )
         s.commit()
@@ -16,8 +16,8 @@ def edit_buyer():
     with conn.session as s:
         #s.execute('DELETE FROM receptor;')
         s.execute(
-        """UPDATE receptor SET razon_social='{}', rut='{}', mail='{}'
-        WHERE razon_social='{}';""".format(st.session_state.new_name,
+        """UPDATE buyers SET company_name='{}', rut='{}', mail='{}'
+        WHERE company_name='{}';""".format(st.session_state.new_name,
                                           st.session_state.new_rut,
                                           st.session_state.new_mail,
                                           option))
@@ -46,20 +46,20 @@ if submit_button:
         new_buyer()
         st.success(f"Se ha creado el contacto para {name}")
 
-buyers = conn.query('select * from receptor', ttl=0)
+buyers = conn.query('SELECT * FROM buyers', ttl=0)
 
 st.write("# Edita un comprador")
 
 option = st.selectbox(
         "Selecciona un comprador.",
-        tuple(buyers['razon_social']),
+        tuple(buyers['company_name']),
         index=None,
         placeholder="Comprador...",
     )
 
 if option is not None:
 
-    buyer = buyers[buyers.razon_social == option]
+    buyer = buyers[buyers.company_name == option]
 
     with st.form("edit_buyer", clear_on_submit=True):
         new_name = st.text_input('Razon Social', key="new_name", value=option)
@@ -75,5 +75,5 @@ if option is not None:
             st.success(f"Se ha editado el contacto de {option}")
             st.rerun()
 
-buyers = conn.query('select * from receptor', ttl=0)
+buyers = conn.query('SELECT * FROM buyers', ttl=0)
 st.dataframe(buyers)

@@ -21,31 +21,31 @@ def new_repuestos():
 
 def save():
 
-    buyer_id = conn.query(f"""select * from receptor
-                          where razon_social='{option}'""", ttl=0)['id'].iloc[0]
+    buyer_id = conn.query(f"""SELECT * FROM buyers
+                          WHERE company_name='{option}'""", ttl=0)['buyer_id'].iloc[0]
                           
     with conn.session as s:
         #s.execute('DELETE FROM receptor;')
 
         s.execute(
-            """INSERT INTO cotizacion (id_receptor, vehiculo, vin)
-            VALUES (:id_receptor, :vehiculo, :vin);""",
-            params=dict(id_receptor=int(buyer_id), vehiculo=st.session_state.vehicule,
+            """INSERT INTO quotes (buyer_id, vehicle, vin)
+            VALUES (:buyer_id, :vehicle, :vin);""",
+            params=dict(buyer_id=int(buyer_id), vehicle=st.session_state.vehicle,
                         vin=st.session_state.vin)
         )
 
         for _, row in st.session_state.repuestos.iterrows():
             s.execute(
-            """INSERT INTO repuesto (id_cotizacion, cantidad, descripcion, precio, numero_parte)
-            VALUES (:id_cotizacion, :cantidad, :descripcion, :precio, :numero_parte);""",
-            params=dict(id_cotizacion=st.session_state.next_id, cantidad=row['Cantidad'],
-                        descripcion=row['Descripcion'], precio=row['Valor Unitario'],
-                        numero_parte=row['Nº de Parte'])
+            """INSERT INTO parts (quote_id, amount, description, price, part_number)
+            VALUES (:quote_id, :amount, :description, :price, :part_number);""",
+            params=dict(quote_id=st.session_state.next_id, amount=row['Cantidad'],
+                        description=row['Descripcion'], price=row['Valor Unitario'],
+                        part_number=row['Nº de Parte'])
             )
 
         context = render_pdf.get_context(st.session_state.repuestos)
         NUM = st.session_state.next_id
-        my_context = {'num': NUM, 'vehicule': st.session_state.vehicule,
+        my_context = {'num': NUM, 'vehicle': st.session_state.vehicle,
                       'vin': st.session_state.vin, 'name': option}
         context.update(my_context)
 
@@ -63,16 +63,18 @@ st.set_page_config(
 
 conn = st.experimental_connection('imgec_db', type='sql')
 
-LAST_ID = conn.query("""select * from cotizacion
-                     where id=(select max(id) from cotizacion)""", ttl=0)['id'].iloc[0]
+LAST_ID = conn.query("""SELECT * FROM quotes
+                     WHERE quote_id=(
+                     SELECT max(quote_id) FROM quotes)""", ttl=0)['quote_id'].iloc[0]
+
 st.session_state.next_id = int(LAST_ID) + 1
 
 st.title(f"🧰 Cotizacion Nº {st.session_state.next_id}")
 
-buyers = conn.query('select * from receptor', ttl=0)
+buyers = conn.query('SELECT * FROM buyers', ttl=0)
 # st.dataframe(buyers)
 
-# refs = conn.query('select * from repuesto', ttl=0)
+# refs = conn.query('SELECT * FROM repuesto', ttl=0)
 # st.dataframe(refs)
 
 if "repuestos" not in st.session_state:
@@ -87,11 +89,11 @@ st.write("# Agrega informacion")
 with st.form("info", clear_on_submit=False):
     option = st.selectbox(
         "Selecciona un comprador.",
-        tuple(buyers['razon_social']),
+        tuple(buyers['company_name']),
         index=None,
         placeholder="Comprador...",
     )
-    vehicule = st.text_input('Vehiculo', key="vehicule")
+    vehicle = st.text_input('Vehiculo', key="vehicle")
     vin = st.text_input('VIN', key="vin")
     st.form_submit_button("Actualizar info")
 

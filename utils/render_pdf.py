@@ -20,7 +20,7 @@ def get_context(df):
     date = datetime.today().strftime("%d, %b, %Y")
 
     total = (np.array(df['Cantidad'], int) * \
-            np.array(df['Valor Unitario'].str.replace('.', ''), int)).sum()
+             np.array(df['Valor Unitario'].str.replace('.', ''), int)).sum()
     sub_total = np.ceil(total / 1.19).astype(np.uint64)
     iva = total - sub_total # np.ceil(total * (0.19 / 1.19)).astype(np.uint64)
 

@@ -44,15 +44,15 @@ def fill_table(driver, RUT, articulos):
     for i, articulo in enumerate(articulos):
 
         sbox = driver.find_element(by=By.NAME, value=f'EFXP_NMB_0{i+1}')
-        sbox.send_keys(articulo[2])
+        sbox.send_keys(articulo[3])
         sleep(sleep_time)
 
         sbox = driver.find_element(by=By.NAME, value=f'EFXP_QTY_0{i+1}')
-        sbox.send_keys(str(articulo[1]))
+        sbox.send_keys(str(articulo[2]))
         sleep(sleep_time)
 
         sbox = driver.find_element(by=By.NAME, value=f'EFXP_PRC_0{i+1}')
-        sbox.send_keys(str(articulo[3]))
+        sbox.send_keys(str(articulo[4]))
         sleep(sleep_time)
 
         sbox = driver.find_element(by=By.NAME, value='AGREGA_DETALLE')
