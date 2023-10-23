@@ -49,7 +49,7 @@ def save():
                       'vin': st.session_state.vin, 'name': option}
         context.update(my_context)
 
-        render_pdf.render(context, f"COTIZACION {NUM}.pdf")
+        render_pdf.render(context, f'{st.secrets.render_path.output_render}/COTIZACION {NUM}.pdf')
 
         s.commit()
 
@@ -72,17 +72,9 @@ st.session_state.next_id = int(LAST_ID) + 1
 st.title(f"🧰 Cotizacion Nº {st.session_state.next_id}")
 
 buyers = conn.query('SELECT * FROM buyers', ttl=0)
-# st.dataframe(buyers)
-
-# refs = conn.query('SELECT * FROM repuesto', ttl=0)
-# st.dataframe(refs)
 
 if "repuestos" not in st.session_state:
     new_df()
-
-# st.write('Seleccionaste:', option)
-
-# st.write(st.session_state.repuestos)
 
 st.write("# Agrega informacion")
 
