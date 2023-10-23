@@ -1,7 +1,7 @@
 import os
 import streamlit as st
 
-os.remove('imgec.db')
+#os.remove('imgec.db')
 
 # Create the SQL connection to pets_db as specified in your secrets file.
 if not os.path.exists('imgec.db'):

@@ -1,11 +1,9 @@
+import streamlit as st
 from time import sleep
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-USER = "9003182-1"
-PASW = "TITAN4870"
-
-sleep_time = 3
+sleep_time = 2
 
 def get_driver():
 
@@ -17,11 +15,11 @@ def get_driver():
 def login(driver):
 
     sbox = driver.find_element(by=By.NAME, value='rutcntr')
-    sbox.send_keys(USER)
+    sbox.send_keys(st.secrets.sii_credentials.username)
     sleep(sleep_time)
 
     sbox = driver.find_element(by=By.NAME, value='clave')
-    sbox.send_keys(PASW)
+    sbox.send_keys(st.secrets.sii_credentials.password)
     sleep(sleep_time)
 
     submit_button = driver.find_element(by=By.ID, value="bt_ingresar")
