@@ -59,11 +59,9 @@ def fill_table(driver, RUT, articulos):
 
 def main(RUT, articulos):
     driver = get_driver()
-    sleep(sleep_time)
     login(driver)
     sleep(sleep_time)
     driver.get("https://www1.sii.cl/cgi-bin/Portal001/mipeLaunchPage.cgi?OPCION=33&amp;TIPO=4")
-    sleep(sleep_time)
     fill_table(driver, RUT, articulos)
     validate = driver.find_element(by=By.NAME, value='Button_Update')
     validate.click()
