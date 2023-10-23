@@ -14,8 +14,6 @@ def sign():
     articulos = [list(repuestos.loc[i]) for i in range(len(repuestos))]
     receptor = conn.query(f"SELECT * FROM buyers WHERE buyer_id='{id_receptor}'", ttl=0)
     rut, mail = receptor['rut'].loc[0], receptor['mail'].loc[0]
-    # print(rut, mail)
-    # print(articulos)
     sii_sign.main(rut, articulos)
 
 
