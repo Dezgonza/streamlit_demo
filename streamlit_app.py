@@ -1,20 +1,18 @@
+import os
 import streamlit as st
+from utils import db_manage
+
+#os.remove('imgec.db')
 
 # Create the SQL connection to pets_db as specified in your secrets file.
-conn = st.experimental_connection('imgec_db', type='sql')
+if not os.path.exists('imgec.db'):
 
-with conn.session as s:
+    conn = st.experimental_connection('imgec_db', type='sql')
 
-    s.execute("""CREATE TABLE IF NOT EXISTS cotizacion(id integer primary key autoincrement,
-                                                             numero integer, id_receptor integer,
-                                                             vehiculo varchar(50), vin varchar(50))""")
-    s.execute("""CREATE TABLE IF NOT EXISTS repuesto(id_cotizacion integer, cantidad integer,
-                                                     descripcion varchar(50), precio integer,
-                                                     numero_parte varchar(50))""")
-    s.execute("""CREATE TABLE IF NOT EXISTS receptor(id integer primary key autoincrement,
-                                                     razon_social varchar(50), rut varchar(50),
-                                                     mail varchar(50))""")
+    with conn.session as s:
+
+        db_manage.create_db(s, start_by=721)
 
 # Query and display the data you inserted
-pet_owners = conn.query('select * from repuesto')
-st.dataframe(pet_owners)
+# pet_owners = conn.query('select * from repuesto')
+# st.dataframe(pet_owners)

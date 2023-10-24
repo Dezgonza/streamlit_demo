@@ -1,7 +1,6 @@
 import os
 import base64
 import numpy as np
-import streamlit as st
 from docx2pdf import convert
 from datetime import datetime
 from docxtpl import DocxTemplate
@@ -20,11 +19,11 @@ def get_context(df):
     date = datetime.today().strftime("%d, %b, %Y")
 
     total = (np.array(df['Cantidad'], int) * \
-            np.array(df['Valor Unitario'].str.replace('.', ''), int)).sum()
+             np.array(df['Valor Unitario'].str.replace('.', ''), int)).sum()
     sub_total = np.ceil(total / 1.19).astype(np.uint64)
     iva = total - sub_total # np.ceil(total * (0.19 / 1.19)).astype(np.uint64)
 
-    context = {'date': date,  'iva': iva, 'total': total, 'sub_total': sub_total}
+    context = {'date': date, 'iva': iva, 'total': total, 'sub_total': sub_total}
 
     for i in range(11):
 
@@ -42,5 +41,7 @@ def get_context(df):
 def show_pdf(file_path):
     with open(file_path,"rb") as f:
         base64_pdf = base64.b64encode(f.read()).decode('utf-8')
-    pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="800" height="800" type="application/pdf"></iframe>'
+    pdf_display = f'''<iframe src="data:application/pdf;base64,{base64_pdf}"
+                        width="800" height="800" type="application/pdf">
+                      </iframe>'''
     return pdf_display

@@ -21,42 +21,38 @@ def new_repuestos():
 
 def save():
 
-    buyer_id = conn.query(f"""select id
-                              from receptor
-                              where razon_social='{option}'""", ttl=0)['id']
-    # print(int(buyer_id))
+    buyer_id = conn.query(f"""SELECT * FROM buyers
+                          WHERE company_name='{option}'""", ttl=0)['buyer_id'].iloc[0]
                           
     with conn.session as s:
         #s.execute('DELETE FROM receptor;')
 
         s.execute(
-            """INSERT INTO cotizacion (numero, id_receptor, vehiculo, vin)
-            VALUES (:numero, :id_receptor, :vehiculo, :vin);""",
-            params=dict(numero=st.session_state.num, id_receptor=int(buyer_id),
-                        vehiculo=st.session_state.vehicule, vin=st.session_state.vin)
+            """INSERT INTO quotes (buyer_id, vehicle, vin)
+            VALUES (:buyer_id, :vehicle, :vin);""",
+            params=dict(buyer_id=int(buyer_id), vehicle=st.session_state.vehicle,
+                        vin=st.session_state.vin)
         )
-        s.commit()
-
-        last_id = conn.query("""SELECT * FROM cotizacion
-                             WHERE id=(SELECT max(id) FROM cotizacion)""", ttl=0)['id']
-        # print('id', int(last_id))
 
         for _, row in st.session_state.repuestos.iterrows():
             s.execute(
-            """INSERT INTO repuesto (id_cotizacion, cantidad, descripcion, precio, numero_parte)
-            VALUES (:id_cotizacion, :cantidad, :descripcion, :precio, :numero_parte);""",
-            params=dict(id_cotizacion=int(last_id), cantidad=row['Cantidad'], descripcion=row['Descripcion'],
-                        precio=row['Valor Unitario'], numero_parte=row['Nº de Parte'])
+            """INSERT INTO parts (quote_id, amount, description, price, part_number)
+            VALUES (:quote_id, :amount, :description, :price, :part_number);""",
+            params=dict(quote_id=st.session_state.next_id, amount=row['Cantidad'],
+                        description=row['Descripcion'], price=row['Valor Unitario'],
+                        part_number=row['Nº de Parte'])
             )
+
+        context = render_pdf.get_context(st.session_state.repuestos)
+        NUM = st.session_state.next_id
+        my_context = {'num': NUM, 'vehicle': st.session_state.vehicle,
+                      'vin': st.session_state.vin, 'name': option}
+        context.update(my_context)
+
+        render_pdf.render(context, f'{st.secrets.render_path.output_render}/COTIZACION {NUM}.pdf')
+
         s.commit()
 
-    context = render_pdf.get_context(st.session_state.repuestos)
-    NUM = st.session_state.num
-    my_context = {'num': NUM, 'vehicule': st.session_state.vehicule,
-                  'vin': st.session_state.vin}
-    context.update(my_context)
-
-    render_pdf.render(context, f"COTIZACION {NUM}.pdf")
     new_df()
     
 
@@ -65,34 +61,31 @@ st.set_page_config(
     page_icon='🧰'
 )
 
-st.title("🧰 Crear Cotizacion")
-
 conn = st.experimental_connection('imgec_db', type='sql')
 
-buyers = conn.query('select * from receptor', ttl=0)
-# st.dataframe(buyers)
+LAST_ID = conn.query("""SELECT * FROM quotes
+                     WHERE quote_id=(
+                     SELECT max(quote_id) FROM quotes)""", ttl=0)['quote_id'].iloc[0]
 
-# refs = conn.query('select * from repuesto', ttl=0)
-# st.dataframe(refs)
+st.session_state.next_id = int(LAST_ID) + 1
+
+st.title(f"🧰 Cotizacion Nº {st.session_state.next_id}")
+
+buyers = conn.query('SELECT * FROM buyers', ttl=0)
 
 if "repuestos" not in st.session_state:
     new_df()
-
-# st.write('Seleccionaste:', option)
-
-# st.write(st.session_state.repuestos)
 
 st.write("# Agrega informacion")
 
 with st.form("info", clear_on_submit=False):
     option = st.selectbox(
         "Selecciona un comprador.",
-        tuple(buyers['razon_social']),
+        tuple(buyers['company_name']),
         index=None,
         placeholder="Comprador...",
     )
-    num = st.text_input('Nº de Cotizacion', key="num")
-    vehicule = st.text_input('Vehiculo', key="vehicule")
+    vehicle = st.text_input('Vehiculo', key="vehicle")
     vin = st.text_input('VIN', key="vin")
     st.form_submit_button("Actualizar info")
 
