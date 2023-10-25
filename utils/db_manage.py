@@ -8,9 +8,10 @@ def create_db(session, start_by=None):
     
     session.execute("""CREATE TABLE IF NOT EXISTS quotes (
                     quote_id integer primary key autoincrement,
-                    buyer_id INT,
+                    buyer_id INT  NOT NULL,
                     vehicle VARCHAR(50) NOT NULL,
                     vin VARCHAR(50) NOT NULL,
+                    signed BOOLEAN NOT NULL DEFAULT FALSE,
                     FOREIGN KEY (buyer_id) REFERENCES buyers(buyer_id));""")
         
     session.execute("""CREATE TABLE IF NOT EXISTS parts(

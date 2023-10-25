@@ -1,7 +1,8 @@
 /*.db
 /*.pdf
-/a.ipynb
+/*.html
+/*.jpeg
+/*.ipynb
 /🔌_Home.py
 /*/__pycache__
-/imgec_logo.jpeg
-/.streamlit/secrets.toml
+/*/secrets.toml
