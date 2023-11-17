@@ -5,9 +5,9 @@ def new_buyer():
     with conn.session as s:
         #s.execute('DELETE FROM receptor;')
         s.execute(
-        'INSERT INTO buyers (company_name, rut, mail) VALUES (:company_name, :rut, :mail);',
+        'INSERT INTO buyers (company_name, rut, mail, cellphone) VALUES (:company_name, :rut, :mail, :cellphone);',
         params=dict(company_name=st.session_state.name, rut=st.session_state.rut,
-                    mail=st.session_state.mail)
+                    mail=st.session_state.mail, cellphone=st.session_state.cellphone)
         )
         s.commit()
 
@@ -16,10 +16,11 @@ def edit_buyer():
     with conn.session as s:
         #s.execute('DELETE FROM receptor;')
         s.execute(
-        """UPDATE buyers SET company_name='{}', rut='{}', mail='{}'
+        """UPDATE buyers SET company_name='{}', rut='{}', mail='{}', cellphone='{}'
         WHERE company_name='{}';""".format(st.session_state.new_name,
                                           st.session_state.new_rut,
                                           st.session_state.new_mail,
+                                          st.session_state.new_cellphone,
                                           option))
         s.commit()
 
@@ -37,6 +38,7 @@ with st.form("new_buyer", clear_on_submit=True):
     name = st.text_input('Razon Social', key="name")
     rut = st.text_input('RUT', key="rut")
     mail = st.text_input('E-mail', key="mail")
+    cellphone = st.text_input('Teléfono', key="cellphone")
     submit_button = st.form_submit_button("Agregar")
 
 if submit_button:
@@ -65,6 +67,7 @@ if option is not None:
         new_name = st.text_input('Razon Social', key="new_name", value=option)
         new_rut = st.text_input('RUT', key="new_rut", value=buyer.rut.iloc[0])
         new_mail = st.text_input('E-mail', key="new_mail", value=buyer.mail.iloc[0])
+        new_cellphone = st.text_input('Teléfono', key="new_cellphone", value=buyer.cellphone.iloc[0])
         edit_button = st.form_submit_button("Actualizar")
 
     if edit_button:

@@ -14,7 +14,7 @@ def create_db(session, start_by=None):
                     signed BOOLEAN NOT NULL DEFAULT FALSE,
                     FOREIGN KEY (buyer_id) REFERENCES buyers(buyer_id));""")
         
-    session.execute("""CREATE TABLE IF NOT EXISTS parts(
+    session.execute("""CREATE TABLE IF NOT EXISTS parts (
                     buyer_id INT,
                     quote_id INT,
                     amount INT NOT NULL,

@@ -6,20 +6,62 @@ import render_pdf
 import pandas as pd
 import streamlit as st
 
+from streamlit_modal import Modal
+
+import streamlit.components.v1 as components
+
+
+COLUMNS = ['Cantidad', 'Nº de Parte', 'Descripcion', 'Valor Unitario']
 
 def new_df():
-    df = pd.DataFrame(columns=['Cantidad', 'Nº de Parte',
-                               'Descripcion', 'Valor Unitario'])
+    df = pd.DataFrame(columns=COLUMNS)
     st.session_state.repuestos = df
 
+def clear_form_part():
+    st.session_state.cnt = st.session_state.parte = \
+        st.session_state.desc = st.session_state.price = ''
+    
+def clear_form_info():
+    st.session_state.vin = st.session_state.vehicle = ''
+
 def new_repuestos():
-    n = len(st.session_state.repuestos)
-    st.session_state.repuestos.loc[n] = [
+    part_info = [
         st.session_state.cnt, st.session_state.parte,
         st.session_state.desc, st.session_state.price
     ]
 
+    missing_fields = []
+    for info, column in zip(part_info, COLUMNS):
+        if info == '': missing_fields += [column]
+
+    if len(missing_fields) > 0:
+
+        st.session_state.str_missing_fields_parts = " - ".join(missing_fields)
+        modal_parts.open()
+
+    n = len(st.session_state.repuestos)
+    st.session_state.repuestos.loc[n] = part_info
+    clear_form_part()
+
+def valid_quote():
+
+    missing_fields = []
+
+    if option is None: missing_fields += ['Comprador']
+    if st.session_state.vehicle == '': missing_fields += ['Vehiculo']
+    if st.session_state.vin == '': missing_fields += ['VIN']
+    if len(st.session_state.repuestos) == 0: missing_fields += ['Repuestos']
+
+    if len(missing_fields) > 0:
+
+        st.session_state.str_missing_fields_quote = " - ".join(missing_fields)
+        modal_quote.open()
+
+    return True
+
 def save():
+
+    assert valid_quote()
 
     buyer_id = conn.query(f"""SELECT * FROM buyers
                           WHERE company_name='{option}'""", ttl=0)['buyer_id'].iloc[0]
@@ -36,11 +78,11 @@ def save():
 
         for _, row in st.session_state.repuestos.iterrows():
             s.execute(
-            """INSERT INTO parts (quote_id, amount, description, price, part_number)
-            VALUES (:quote_id, :amount, :description, :price, :part_number);""",
-            params=dict(quote_id=st.session_state.next_id, amount=row['Cantidad'],
-                        description=row['Descripcion'], price=row['Valor Unitario'],
-                        part_number=row['Nº de Parte'])
+            """INSERT INTO parts (buyer_id, quote_id, amount, description, price, part_number)
+            VALUES (:buyer_id, :quote_id, :amount, :description, :price, :part_number);""",
+            params=dict(buyer_id=int(buyer_id), quote_id=st.session_state.next_id,
+                        amount=row['Cantidad'], description=row['Descripcion'],
+                        price=row['Valor Unitario'], part_number=row['Nº de Parte'])
             )
 
         context = render_pdf.get_context(st.session_state.repuestos)
@@ -54,6 +96,7 @@ def save():
         s.commit()
 
     new_df()
+    clear_form_info()
     
 
 st.set_page_config(
@@ -72,6 +115,36 @@ st.session_state.next_id = int(LAST_ID) + 1
 st.title(f"🧰 Cotizacion Nº {st.session_state.next_id}")
 
 buyers = conn.query('SELECT * FROM buyers', ttl=0)
+
+modal_parts = Modal("Faltan campos por completar para agregar repuesto", 'a')
+
+if modal_parts.is_open():
+    with modal_parts.container():
+
+        html_string = f'''
+
+        <h2>{st.session_state.str_missing_fields_parts}</h2>
+
+        <script language="javascript">
+          document.querySelector("h2").style.color = "red";
+        </script>
+        '''
+        components.html(html_string)
+
+modal_quote = Modal("Faltan algunos campos por completar cotizacion", 'b')
+
+if modal_quote.is_open():
+    with modal_quote.container():
+
+        html_string = f'''
+
+        <h2>{st.session_state.str_missing_fields_quote}</h2>
+
+        <script language="javascript">
+          document.querySelector("h2").style.color = "red";
+        </script>
+        '''
+        components.html(html_string)
 
 if "repuestos" not in st.session_state:
     new_df()
@@ -94,7 +167,7 @@ st.write("# Tabla Repuestos")
 st.write(st.session_state.repuestos)
 
 st.write("# Agrega un nuevo repuesto")
-with st.form("new_repuesto", clear_on_submit=True):
+with st.form("new_repuesto"):
     desc = st.text_input('Descripcion', key="desc")
     parte = st.text_input('Nº de Parte', key="parte")
     price = st.text_input('Valor Unitario', key="price")

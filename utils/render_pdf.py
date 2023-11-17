@@ -1,5 +1,6 @@
 import os
 import base64
+import pythoncom
 import numpy as np
 from docx2pdf import convert
 from datetime import datetime
@@ -8,18 +9,20 @@ from docxtpl import DocxTemplate
 TEMPLATE = "template.docx"
 
 def render(context, output_path):
-	doc = DocxTemplate(TEMPLATE)
-	doc.render(context)
-	doc.save("generated_doc.docx")
-	convert("generated_doc.docx", output_path)
-	os.remove("generated_doc.docx")
+    doc = DocxTemplate(TEMPLATE)
+    doc.render(context)
+    doc.save("generated_doc.docx")
+    pythoncom.CoInitialize()
+    convert("generated_doc.docx", output_path)
+    os.remove("generated_doc.docx")
 
 def get_context(df):
 
     date = datetime.today().strftime("%d, %b, %Y")
 
     total = (np.array(df['Cantidad'], int) * \
-             np.array(df['Valor Unitario'].str.replace('.', ''), int)).sum()
+             np.array(df['Valor Unitario'].str.replace('.', ''),
+                      int)).sum().astype(np.uint64)
     sub_total = np.ceil(total / 1.19).astype(np.uint64)
     iva = total - sub_total # np.ceil(total * (0.19 / 1.19)).astype(np.uint64)
 
