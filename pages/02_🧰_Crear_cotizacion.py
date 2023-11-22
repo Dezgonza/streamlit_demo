@@ -30,13 +30,18 @@ def new_repuestos():
         st.session_state.desc, st.session_state.price
     ]
 
-    missing_fields = []
-    for info, column in zip(part_info, COLUMNS):
-        if info == '': missing_fields += [column]
+    error = ''
 
-    if len(missing_fields) > 0:
-
-        st.session_state.str_missing_fields_parts = " - ".join(missing_fields)
+    for i, (info, column) in enumerate(zip(part_info, COLUMNS)):
+        if info == '':
+            error += f'<li>Falta el campo {column}</li>'
+        if i%3 == 0:
+            if not info.isdigit():
+                error += f'<li>El campo {column} solo debe contener numeros</li>'
+    
+    if len(error) > 0:
+        
+        st.session_state.str_missing_fields_parts = error
         modal_parts.open()
 
     n = len(st.session_state.repuestos)
@@ -97,7 +102,24 @@ def save():
 
     new_df()
     clear_form_info()
-    
+
+def main_save():
+
+    import traceback
+    from datetime import datetime
+
+    try:
+        save()
+    except Exception as e:
+        error = traceback.format_exc()
+        print('Error = ', error)
+        formated_now = datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
+        with open(f'error_{formated_now}.txt', 'w', encoding='utf-8') as f:
+            f.write(error)
+
+    new_df()
+    clear_form_info()
+
 
 st.set_page_config(
     page_title='Crear Cotizacion',
@@ -116,20 +138,25 @@ st.title(f"🧰 Cotizacion Nº {st.session_state.next_id}")
 
 buyers = conn.query('SELECT * FROM buyers', ttl=0)
 
-modal_parts = Modal("Faltan campos por completar para agregar repuesto", 'a')
+modal_parts = Modal("Existen algunos problemas al agregar el repuesto", 'a')
 
 if modal_parts.is_open():
     with modal_parts.container():
 
         html_string = f'''
 
-        <h2>{st.session_state.str_missing_fields_parts}</h2>
+        <ul>
+            {st.session_state.str_missing_fields_parts}
+        </ul>  
+        
 
         <script language="javascript">
-          document.querySelector("h2").style.color = "red";
+          document.querySelector("ul").style.color = "red";
         </script>
         '''
         components.html(html_string)
+
+# <h2>{st.session_state.str_missing_fields_parts}</h2>
 
 modal_quote = Modal("Faltan algunos campos por completar cotizacion", 'b')
 
@@ -180,4 +207,4 @@ with col1:
     st.button("Vaciar", on_click=new_df)
 
 with col2:
-    st.button("Guardar", on_click=save)
+    st.button("Guardar", on_click=main_save)
